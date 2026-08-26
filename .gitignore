@@ -1,5 +1,6 @@
 node_modules/
 package-lock.json
-fixture.json
+items.json
+email.html
 .env
 .DS_Store

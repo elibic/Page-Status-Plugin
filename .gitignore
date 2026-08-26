@@ -4,3 +4,7 @@ items.json
 email.html
 .env
 .DS_Store
+
+# פלט מורכב של קנבס העיצוב, נבנה מחדש מקבצי המקור שלידו
+design/*.html
+!design/*.dc.html

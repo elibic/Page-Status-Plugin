@@ -243,6 +243,43 @@ function hebrewDate() {
   }
 }
 
+// תקרות ריכוזיות. שלוש הרצות הראו שהנחיה בפרוזה לא מחזיקה, ולכן
+// הבדיקה כאן חוסמת רינדור במקום להסתמך על שיקול דעת.
+const MAX_PER_SOURCE = 2;
+const MAX_PER_URL = 2;
+
+function tally(items, key) {
+  const counts = new Map();
+  items.forEach(function (item) {
+    const value = String(item[key] || '').trim().toLowerCase();
+    if (!value) return;
+    counts.set(value, (counts.get(value) || 0) + 1);
+  });
+  return counts;
+}
+
+function checkConcentration(items) {
+  const problems = [];
+
+  tally(items, 'source').forEach(function (count, source) {
+    if (count > MAX_PER_SOURCE) {
+      problems.push('המקור "' + source + '" מופיע ב-' + count + ' פריטים, המקסימום הוא ' + MAX_PER_SOURCE);
+    }
+  });
+
+  tally(items, 'url').forEach(function (count, url) {
+    if (count > MAX_PER_URL) {
+      problems.push('הקישור ' + url + ' משמש ' + count + ' פריטים, המקסימום הוא ' + MAX_PER_URL +
+        '. כמה פריטים מאותו עמוד הם כרייה מתוך פוסט סיכום, לא חיפוש');
+    }
+  });
+
+  if (problems.length) {
+    throw new Error('הפיד מרוכז מדי ולכן לא רונדר:\n  - ' + problems.join('\n  - ') +
+      '\nהשאר את הפריט החזק ביותר מכל מקור, ומצא פריטים אחרים במקומם. אל תשלח את הפיד כמו שהוא.');
+  }
+}
+
 function normalize(data) {
   if (!data || !Array.isArray(data.items)) throw new Error('הקלט לא מכיל מערך items');
 
@@ -266,6 +303,7 @@ function normalize(data) {
     .sort(function (a, b) { return b.stars - a.stars; });
 
   if (!items.length) throw new Error('אין פריטים לרנדר');
+  checkConcentration(items);
   return { date: data.date || hebrewDate(), items: items };
 }
 
@@ -277,9 +315,15 @@ if (!inputPath) {
   process.exit(1);
 }
 
-const feed = normalize(JSON.parse(fs.readFileSync(inputPath, 'utf8')));
-fs.writeFileSync(outputPath, renderEmail(feed), 'utf8');
+try {
+  const feed = normalize(JSON.parse(fs.readFileSync(inputPath, 'utf8')));
+  fs.writeFileSync(outputPath, renderEmail(feed), 'utf8');
 
-// שורת הסיכום נועדה לקלוד: ממנה הוא לוקח את הנושא ואת שם הקובץ לשליחה
-console.log('נרנדרו ' + feed.items.length + ' פריטים אל ' + outputPath);
-console.log('SUBJECT: פיד AI יומי - ' + feed.date);
+  // שורת הסיכום נועדה לקלוד: ממנה הוא לוקח את הנושא ואת שם הקובץ לשליחה
+  console.log('נרנדרו ' + feed.items.length + ' פריטים אל ' + outputPath);
+  console.log('SUBJECT: פיד AI יומי - ' + feed.date);
+} catch (err) {
+  // הודעה נקייה בלי stack, כדי שהסיבה תהיה קריאה
+  console.error(err.message);
+  process.exit(1);
+}

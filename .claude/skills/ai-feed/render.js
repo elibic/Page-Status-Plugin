@@ -248,6 +248,11 @@ function hebrewDate() {
 const MAX_PER_SOURCE = 2;
 const MAX_PER_URL = 2;
 
+// שכבת העושים: מה שאנשים גילו שאפשר לעשות, להבדיל ממה שחברה הכריזה.
+// זה הלב של הפיד, ולכן יש לו רצפה ולא רק המלצה.
+const DOER_TYPES = ['שיטה', 'פרומפט', 'טיפ'];
+const MIN_ITEMS_FOR_MIX = 5;
+
 function tally(items, key) {
   const counts = new Map();
   items.forEach(function (item) {
@@ -280,6 +285,23 @@ function checkConcentration(items) {
   }
 }
 
+function checkMix(items) {
+  if (items.length < MIN_ITEMS_FOR_MIX) return;
+
+  const doers = items.filter(function (item) {
+    return DOER_TYPES.indexOf(String(item.type || '').trim()) !== -1;
+  }).length;
+  const required = Math.max(2, Math.ceil(items.length / 3));
+
+  if (doers < required) {
+    throw new Error('הפיד כולו הודעות ספקים ולכן לא רונדר:\n' +
+      '  - יש ' + doers + ' פריטים מסוג ' + DOER_TYPES.join(' / ') + ', ונדרשים לפחות ' + required +
+      ' מתוך ' + items.length + '\n' +
+      'חפש מה אנשים גילו שאפשר לעשות: פרומפטים, שיטות עבודה וטיפים ב-Reddit, ב-X,\n' +
+      'ביוטיוב ובניוזלטרים של יוצרים. פיד שכולו "חברה X הכריזה" הוא לא הפיד הזה.');
+  }
+}
+
 function normalize(data) {
   if (!data || !Array.isArray(data.items)) throw new Error('הקלט לא מכיל מערך items');
 
@@ -304,6 +326,7 @@ function normalize(data) {
 
   if (!items.length) throw new Error('אין פריטים לרנדר');
   checkConcentration(items);
+  checkMix(items);
   return { date: data.date || hebrewDate(), items: items };
 }
 

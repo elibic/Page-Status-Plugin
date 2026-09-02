@@ -30,6 +30,24 @@ feed-builder/render.js          רנדרר מונע feed.config.json
 הבנייה מכנית: אותו מפרט מייצר תמיד את אותו סקיל. לשינוי פיד קיים
 עורכים את `feed-spec.json` ובונים מחדש, לא עורכים את התוצר.
 
+### הפצה
+
+`dist/feed-builder.zip` הוא הקובץ להתקנה, ואפשר להוריד אותו ישירות:
+
+```
+https://github.com/elibic/Page-Status-Plugin/raw/HEAD/dist/feed-builder.zip
+```
+
+**אי אפשר לשלוח אותו כקובץ מצורף במייל** - ג'ימייל חוסם ארכיוני zip
+ומחזיר את ההודעה כולה, לא רק את הקובץ. שלח קישור.
+
+הקובץ נבנה מ-`.claude/skills/feed-builder/` וצריך אריזה מחדש אחרי כל
+שינוי שם:
+
+```bash
+cd .claude/skills && zip -r ../../dist/feed-builder.zip feed-builder
+```
+
 ## התקנה
 
 הריפו הזה הוא **המקור** של הסקיל, לא מקום ההרצה שלו.
